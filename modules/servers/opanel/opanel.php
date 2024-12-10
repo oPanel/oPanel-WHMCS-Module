@@ -160,9 +160,19 @@ function opanel_SingleSignOn($params,$user,$service,$app = ""){
 	if(empty($user)){
 		return "Username is required for login.";
 	}
-	$URL=$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':2083/'.$app.'?username='.$user.'&password='.urlencode($params["password"]);
+	$Port=2082;
+	if($service == 'admin'){
+		$Port=2086;
+	}
+	if($params["serverhttpprefix"] == 'https'){
+		$Port++;
+	}
+	if($service == 'reseller'){
+		$Port.='/reseller';
+	}
+	$URL=$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':'.$Port.'/'.$app.'?username='.$user.'&password='.urlencode($params["password"]);
 	if($app == 'login'){
-		$URL=$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':2083/?username='.$user.'&password='.urlencode($params["password"]);
+		$URL=$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':'.$Port.'/?username='.$user.'&password='.urlencode($params["password"]);
 	}
 	return array("success" => true, "redirectTo" => $URL);
 }
@@ -181,7 +191,10 @@ function opanel_ServiceSingleSignOn($params){
 	return opanel_singlesignon($params, $user, $service, $app);
 }
 function opanel_AdminSingleSignOn($params){
-	return ["success"=>true,"redirectTo"=>$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':'.$params["serverport"]];
+	$user = $params["serverusername"];
+	$service = "admin";
+	$params['password'] = $params["serverpassword"];
+	return opanel_singlesignon($params, $user, $service);
 }
 function opanel_ListAccounts($params){
 	list($St,$In)=opanel_api($params,"users");
@@ -383,4 +396,12 @@ function opanel_ChangePassword($params){
 		return "success";
 	}
 	return $In;
+}
+function opanel_CreateEmailAccount($params){
+	$oDatas	= ['ADDMAIL'=>App::get_req_var("email_prefix"),'ADDPASS'=>App::get_req_var("email_pw"),'ADDQUOTA'=>(int) App::get_req_var("email_quota")];
+	list($St,$In)=opanel_api($params,"user/".$params["username"].'/email/accounts',$oDatas,'PUT');
+	if($St){
+		return array("jsonResponse" => array("success" => true));
+	}
+	return array("jsonResponse" => array("success" => false, "errorMsg" => "An error occurred. Please contact support."));
 }
