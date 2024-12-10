@@ -153,9 +153,32 @@ function opanel_RenderRemoteMetaData($params){
 	}
 	return "";
 }
+function opanel_ClientArea($params){
+	return array("overrideDisplayTitle" => ucfirst($params["domain"]), "tabOverviewReplacementTemplate" => "overview.tpl", "tabOverviewModuleOutputTemplate" => "loginbuttons.tpl");
+}
+function opanel_SingleSignOn($params,$user,$service,$app = ""){
+	if(empty($user)){
+		return "Username is required for login.";
+	}
+	$URL=$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':2083/'.$app.'?username='.$user.'&password='.urlencode($params["password"]);
+	if($app == 'login'){
+		$URL=$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':2083/?username='.$user.'&password='.urlencode($params["password"]);
+	}
+	return array("success" => true, "redirectTo" => $URL);
+}
 function opanel_ServiceSingleSignOn($params){
-//	return ["success"=>true,"redirectTo"=>$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':'.($params["serverhttpprefix"]=='http'?2082:2083).'/?username='.urlencode($params["username"]).'&password='.urldecode($params["password"])];
-	return ["success"=>true,"redirectTo"=>$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':'.($params["serverhttpprefix"]=='http'?2082:2083)];
+	$user = $params["username"];
+	$app = App::get_req_var("app");
+	if($params["producttype"] == "reselleraccount"){
+		if($app){
+			$service = "user";
+		}else{
+			$service = "reseller";
+		}
+	}else{
+		$service = "user";
+	}
+	return opanel_singlesignon($params, $user, $service, $app);
 }
 function opanel_AdminSingleSignOn($params){
 	return ["success"=>true,"redirectTo"=>$params["serverhttpprefix"].'://'.(!empty($params["serverhostname"])?$params["serverhostname"]:$params["serverip"]).':'.$params["serverport"]];
