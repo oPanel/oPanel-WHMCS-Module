@@ -131,14 +131,14 @@ function doEmailCreate() {
 						<br /><br />
 						<input type="text" value="{$diskpercent|substr:0:-1}" class="usage-dial" data-fgColor="#444" data-angleOffset="-125" data-angleArc="250" data-min="0" data-max="{if substr($diskpercent, 0, -1) > 100}{$diskpercent|substr:0:-1}{else}100{/if}" data-readOnly="true" data-width="100" data-height="80" />
 						<br /><br />
-						{$diskusage} M / {$disklimit} M
+						{$diskusage} M / {if $disklimit == '0'}{$disklimit} M{else}&#8734;{/if}
 					</div>
 					<div class="col-sm-5 col-xs-6" id="bandwidthUsage">
 						<strong>{$LANG.cPanel.bandwidthUsage}</strong>
 						<br /><br />
 						<input type="text" value="{$bwpercent|substr:0:-1}" class="usage-dial" data-fgColor="#d9534f" data-angleOffset="-125" data-angleArc="250" data-min="0" data-max="{if substr($bwpercent, 0, -1) > 100}{$bwpercent|substr:0:-1}{else}100{/if}" data-readOnly="true" data-width="100" data-height="80" />
 						<br /><br />
-						{$bwusage} M / {$bwlimit} M
+						{$bwusage} M / {if $bwlimit == '0'}{$bwlimit} M{else}&#8734;{/if}
 					</div>
 				</div>
 
@@ -200,7 +200,6 @@ function doEmailCreate() {
 {/foreach}
 
 {if $systemStatus == 'Active'}
-
 	<div class="panel panel-default" id="oPanelQuickShortcutsPanel">
 		<div class="panel-heading">
 			<h3 class="panel-title">{$LANG.cPanel.quickShortcuts}</h3>
@@ -279,20 +278,15 @@ function doEmailCreate() {
 					</a>
 				</div>
 			</div>
-
 		</div>
 	</div>
-
 	<div class="panel panel-default" id="oPanelQuickEmailPanel">
 		<div class="panel-heading">
 			<h3 class="panel-title">{$LANG.cPanel.createEmailAccount}</h3>
 		</div>
 		<div class="panel-body">
-
 			{include file="$template/includes/alert.tpl" type="success" msg=$LANG.cPanel.emailAccountCreateSuccess textcenter=true hide=true idname="emailCreateSuccess" additionalClasses="email-create-feedback"}
-
 			{include file="$template/includes/alert.tpl" type="danger" msg=$LANG.cPanel.emailAccountCreateFailed|cat:' <span id="emailCreateFailedErrorMsg"></span>' textcenter=true hide=true idname="emailCreateFailed" additionalClasses="email-create-feedback"}
-
 			<form id="frmCreateEmailAccount" onsubmit="doEmailCreate();return false">
 				<input type="hidden" name="id" value="{$serviceid}" />
 				<input type="hidden" name="email_quota" value="250" />
@@ -314,10 +308,8 @@ function doEmailCreate() {
 					</div>
 				</div>
 			</form>
-
 		</div>
 	</div>
-
 {else}
 
 	<div class="alert alert-warning text-center" role="alert" id="oPanelSuspendReasonPanel">

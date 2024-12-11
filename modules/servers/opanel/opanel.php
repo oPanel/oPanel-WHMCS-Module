@@ -111,6 +111,19 @@ function opanel_GetUserCount($params){
 	}
 	return ["success"=>$St,"error"=>$In];
 }
+function opanel_getUserData(array $params){
+	list($St,$In)=opanel_api($params,"users");
+	if($St and isset($In[$params["username"]])){
+		$In[$params["username"]]['name']=$In[$params["username"]]['user'];
+		$In[$params["username"]]['email']=$In[$params["username"]]['contact'];
+		$In[$params["username"]]['uniqueIdentifier']=$In[$params["username"]]['domain'];
+		$In[$params["username"]]['product']=$In[$params["username"]]['packet'];
+		return array("success" => true, "userData" => $In[$params["username"]]);
+	}elseif($St){
+		return array("success" => false, "userData" => [], "error" => 'User Not Found');
+	}
+	return array("success" => false, "userData" => [], "error" => $In);
+}
 function opanel_GetRemoteMetaData($params){
 	$Return=["version"=>'-',"load"=>["fifteen"=>"0","five"=>"0","one"=>"0"],"max_accounts"=>0];
 	list($St,$In)=opanel_api($params,"cli",["command"=>"oPanel --action=license --json","background"=>"0"]);
@@ -203,6 +216,15 @@ function opanel_ListAccounts($params){
 	}
 	$accounts	= [];
 	foreach($In as $user=>$data){
+		if(!empty($params["serverid"])){
+			WHMCS\Database\Capsule::table("tblhosting")->where("domain",$data["domain"])->where("server",$params["serverid"])->update([
+				"diskusage"	=> $data["disk"],
+				"disklimit"	=> $data["quota"],
+				"bwusage"	=> 0,
+				"bwlimit"	=> $data["maxbandw"],
+				"lastupdate"=> WHMCS\Carbon::now()->toDateTimeString()
+			]);
+		}
 		$accounts[]	= ["name"=>$data["user"],"email"=>$data["contact"],"username"=>$data["user"],"domain"=>$data["domain"],"uniqueIdentifier"=>$data["domain"],"product"=>'Custom',"primaryip"=>$data["ip"],"created"=>WHMCS\Carbon::createFromTimestamp($data['creation'])->toDateTimeString(),"status"=>($data['status']=='1'?WHMCS\Service\Status::ACTIVE:WHMCS\Service\Status::SUSPENDED)];
 	}
 	return ["success"=>$St,"accounts"=>$accounts];
@@ -397,6 +419,9 @@ function opanel_ChangePassword($params){
 	}
 	return $In;
 }
+function opanel_ClientAreaAllowedFunctions(){
+	return array("CreateEmailAccount");
+}
 function opanel_CreateEmailAccount($params){
 	$oDatas	= ['ADDMAIL'=>App::get_req_var("email_prefix"),'ADDPASS'=>App::get_req_var("email_pw"),'ADDQUOTA'=>(int) App::get_req_var("email_quota")];
 	list($St,$In)=opanel_api($params,"user/".$params["username"].'/email/accounts',$oDatas,'PUT');
@@ -404,4 +429,7 @@ function opanel_CreateEmailAccount($params){
 		return array("jsonResponse" => array("success" => true));
 	}
 	return array("jsonResponse" => array("success" => false, "errorMsg" => "An error occurred. Please contact support."));
+}
+function opanel_UsageUpdate(array $params){
+	opanel_api($params,"users");
 }
