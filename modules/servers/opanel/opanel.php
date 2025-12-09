@@ -27,7 +27,6 @@ function opanel_api($params,$Url,$Post=[],$Method=null){
 	curl_setopt($Curl, CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($Curl, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($Curl, CURLOPT_HEADER, false);
-	curl_setopt($Curl, CURLOPT_HTTPHEADER, false);
 	curl_setopt($Curl, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($Curl, CURLOPT_USERAGENT,$_SERVER['SERVER_NAME']);
 	curl_setopt($Curl, CURLOPT_HTTPHEADER,[
@@ -432,4 +431,5 @@ function opanel_CreateEmailAccount($params){
 }
 function opanel_UsageUpdate(array $params){
 	opanel_api($params,"users");
+
 }
